@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sistema de Accesos</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --glow-purple: rgba(168, 85, 247, 0.4);
+    --glow-pink: rgba(236, 72, 153, 0.3);
+    --glow-blue: rgba(99, 102, 241, 0.3);
+    --text-primary: #f1e8ff;
+    --text-secondary: #c4b5d4;
+    --card-bg: rgba(255, 255, 255, 0.06);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --accent: #a855f7;
+    --accent-pink: #ec4899;
+  }
+
+  html, body {
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #1a0a2e 0%, #16213e 25%, #1a1a3e 50%, #2d1b4e 75%, #1a0a2e 100%);
+    color: var(--text-primary);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  /* ── Particles Canvas ── */
+  #particles-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ── Ambient Glow Orbs ── */
+  .ambient-orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+    animation: orbFloat 12s ease-in-out infinite alternate;
+  }
+
+  .orb-1 {
+    width: 300px; height: 300px;
+    background: var(--glow-purple);
+    top: -50px; left: -80px;
+    animation-duration: 14s;
+  }
+
+  .orb-2 {
+    width: 250px; height: 250px;
+    background: var(--glow-pink);
+    bottom: -60px; right: -60px;
+    animation-duration: 10s;
+    animation-delay: -3s;
+  }
+
+  .orb-3 {
+    width: 200px; height: 200px;
+    background: var(--glow-blue);
+    top: 40%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation-duration: 16s;
+    animation-delay: -6s;
+  }
+
+  @keyframes orbFloat {
+    0% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30px, -20px) scale(1.1); }
+    66% { transform: translate(-20px, 30px) scale(0.9); }
+    100% { transform: translate(10px, 10px) scale(1.05); }
+  }
+
+  /* ── Music Toggle ── */
+  #music-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 1000;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: var(--text-secondary);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #music-toggle.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  #music-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 15px var(--glow-purple);
+  }
+
+  #music-toggle:active {
+    transform: scale(0.9);
+  }
+
+  /* ── Screen Container ── */
+  .screen {
+    position: absolute;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 20px;
+    z-index: 10;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.8s ease, visibility 0.8s ease, transform 0.8s ease;
+    transform: scale(0.97);
+  }
+
+  .screen.active {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+  }
+
+  .screen.exit {
+    opacity: 0;
+    transform: scale(1.03);
+  }
+
+  /* ── Glass Card ── */
+  .glass-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    padding: 36px 28px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 0 60px rgba(168, 85, 247, 0.05);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  }
+
+  /* ── Typewriter Text ── */
+  .typewriter-text {
+    font-size: 1.05rem;
+    font-weight: 400;
+    line-height: 1.7;
+    text-align: center;
+    color: var(--text-primary);
+    min-height: 1.7em;
+  }
+
+  .typewriter-text .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1.1em;
+    background: var(--accent);
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: cursorBlink 0.8s ease-in-out infinite;
+  }
+
+  @keyframes cursorBlink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  /* ── Multi-line Typewriter ── */
+  .multi-line-container {
+    width: 100%;
+    text-align: center;
+  }
+
+  .multi-line-container .line {
+    font-size: 1.05rem;
+    font-weight: 400;
+    line-height: 1.8;
+    margin-bottom: 8px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    color: var(--text-primary);
+  }
+
+  /* FIX: clase visible para mostrar la línea */
+  .multi-line-container .line.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .multi-line-container .line .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1.1em;
+    background: var(--accent);
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: cursorBlink 0.8s ease-in-out infinite;
+  }
+
+  /* FIX: ocultar cursor cuando termina de escribir */
+  .multi-line-container .line.done .cursor {
+    display: none;
+  }
+
+  /* ── Progress Bar ── */
+  .progress-container {
+    width: 100%;
+    max-width: 320px;
+    margin-top: 40px;
+  }
+
+  .progress-bar-bg {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #a855f7, #ec4899, #a855f7);
+    background-size: 200% 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+    animation: gradientShift 2s ease-in-out infinite;
+    box-shadow: 0 0 12px var(--glow-purple), 0 0 24px rgba(236, 72, 153, 0.2);
+  }
+
+  @keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  .progress-text {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 10px;
+    text-align: center;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Buttons ── */
+  .btn-glow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 32px;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(236, 72, 153, 0.1));
+    color: var(--text-primary);
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 28px;
+    position: relative;
+    overflow: hidden;
+    min-width: 180px;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .btn-glow::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .btn-glow:hover {
+    border-color: rgba(168, 85, 247, 0.6);
+    box-shadow: 0 0 20px var(--glow-purple), 0 0 40px rgba(236, 72, 153, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .btn-glow:hover::before {
+    left: 100%;
+  }
+
+  .btn-glow:active {
+    transform: translateY(0) scale(0.97);
+    box-shadow: 0 0 10px var(--glow-purple);
+  }
+
+  .btn-glow:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* ── Input Field ── */
+  .input-field {
+    width: 100%;
+    padding: 14px 20px;
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-primary);
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    outline: none;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .input-field::placeholder {
+    color: rgba(200, 190, 210, 0.4);
+  }
+
+  .input-field:focus {
+    border-color: rgba(168, 85, 247, 0.5);
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.1);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .input-field.shake {
+    animation: inputShake 0.5s ease;
+  }
+
+  @keyframes inputShake {
+    0%, 100% { transform: translateX(0); }
+    15% { transform: translateX(-8px); }
+    30% { transform: translateX(8px); }
+    45% { transform: translateX(-6px); }
+    60% { transform: translateX(6px); }
+    75% { transform: translateX(-3px); }
+    90% { transform: translateX(3px); }
+  }
+
+  /* ── Error / Hint Messages ── */
+  .message-text {
+    font-size: 0.9rem;
+    font-weight: 400;
+    text-align: center;
+    margin-top: 16px;
+    color: var(--accent-pink);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    line-height: 1.5;
+  }
+
+  .message-text.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .message-text.hint {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+  }
+
+  /* ── File Icon / Header ── */
+  .file-icon {
+    font-size: 2.5rem;
+    margin-bottom: 16px;
+    display: block;
+    animation: iconPulse 3s ease-in-out infinite;
+  }
+
+  @keyframes iconPulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px var(--glow-purple)); }
+    50% { transform: scale(1.08); filter: drop-shadow(0 0 16px var(--glow-purple)); }
+  }
+
+  .screen-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #e0c3fc, #f9a8d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .screen-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-align: center;
+    font-weight: 300;
+    margin-bottom: 24px;
+  }
+
+  /* ── Final Screen Special ── */
+  .final-screen .glass-card {
+    border-color: rgba(236, 72, 153, 0.15);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 0 80px rgba(236, 72, 153, 0.08);
+  }
+
+  .heart-float {
+    position: fixed;
+    font-size: 1.2rem;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 5;
+    animation: heartRise 4s ease-in forwards;
+  }
+
+  @keyframes heartRise {
+    0% { opacity: 0; transform: translateY(0) scale(0.5) rotate(0deg); }
+    20% { opacity: 0.8; }
+    100% { opacity: 0; transform: translateY(-120vh) scale(1.2) rotate(25deg); }
+  }
+
+  /* ── Pulse Glow on Key Text ── */
+  .pulse-glow {
+    animation: textPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes textPulse {
+    0%, 100% { text-shadow: 0 0 8px rgba(168, 85, 247, 0.3); }
+    50% { text-shadow: 0 0 20px rgba(168, 85, 247, 0.6), 0 0 40px rgba(236, 72, 153, 0.2); }
+  }
+
+  /* ── Vibration Effect ── */
+  .vibrate {
+    animation: vibrate 0.3s ease;
+  }
+
+  @keyframes vibrate {
+    0%, 100% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(2px, -2px); }
+    60% { transform: translate(-1px, -1px); }
+    80% { transform: translate(1px, 1px); }
+  }
+
+  /* ── Blinking Dots ── */
+  .blink-dots::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+  }
+
+  @keyframes dots {
+    0% { content: ''; }
+    25% { content: '.'; }
+    50% { content: '..'; }
+    75% { content: '...'; }
+    100% { content: ''; }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 480px) {
+    .glass-card {
+      padding: 28px 20px;
+      border-radius: 20px;
+    }
+
+    .typewriter-text,
+    .multi-line-container .line {
+      font-size: 0.95rem;
+    }
+
+    .btn-glow {
+      padding: 13px 28px;
+      font-size: 0.95rem;
+      min-width: 160px;
+    }
+
+    .screen-title {
+      font-size: 1.1rem;
+    }
+
+    .file-icon {
+      font-size: 2.2rem;
+    }
+  }
+
+  @media (max-height: 700px) {
+    .glass-card {
+      padding: 24px 18px;
+    }
+
+    .btn-glow {
+      margin-top: 20px;
+    }
+
+    .progress-container {
+      margin-top: 28px;
+    }
+  }
+
+  /* ── Scanline overlay (subtle) ── */
+  .scanlines {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.015) 2px,
+      rgba(0, 0, 0, 0.015) 4px
+    );
+    opacity: 0.5;
+  }
+
+  .spacer {
+    height: 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Ambient Orbs -->
+<div class="ambient-orb orb-1"></div>
+<div class="ambient-orb orb-2"></div>
+<div class="ambient-orb orb-3"></div>
+
+<!-- Scanlines -->
+<div class="scanlines"></div>
+
+<!-- Particles -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- Music Toggle -->
+<button id="music-toggle" title="Música">🔇</button>
+
+<!-- ═══════════ SCREEN 1: LOADING ═══════════ -->
+<div class="screen active" id="screen-loading">
+  <div class="glass-card" style="text-align:center;">
+    <div class="file-icon">💻</div>
+    <div class="screen-title" id="loading-title"></div>
+    <div class="progress-container">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-text" id="progress-text">0%</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN 2: FILE FOUND ═══════════ -->
+<div class="screen" id="screen-file-found">
+  <div class="glass-card" style="text-align:center;">
+    <div class="file-icon">📁</div>
+    <div class="screen-title" id="found-title"></div>
+    <div class="spacer"></div>
+    <button class="btn-glow" id="btn-open-file" disabled>Abrir archivo</button>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN 3: PASSWORD ═══════════ -->
+<div class="screen" id="screen-password">
+  <div class="glass-card" style="text-align:center;">
+    <div class="file-icon">🔒</div>
+    <div class="screen-title">Archivo protegido</div>
+    <div class="screen-subtitle">Este archivo requiere autenticación</div>
+    <input type="text" class="input-field" id="password-input" placeholder="Introduce la contraseña" autocomplete="off">
+    <div class="message-text" id="error-msg"></div>
+    <button class="btn-glow" id="btn-unlock">Desbloquear</button>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN 4: FIRST FILE ═══════════ -->
+<div class="screen" id="screen-first-file">
+  <div class="glass-card" style="text-align:center;">
+    <div class="file-icon">📄</div>
+    <div class="screen-title">Extraccion de datos completada</div>
+    <div class="screen-subtitle">Resultados del escaneo</div>
+    <div class="multi-line-container" id="first-file-lines"></div>
+    <div class="spacer"></div>
+    <button class="btn-glow" id="btn-continue" style="display:none;">Aceptar y continuar</button>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN 5: BUILD-UP ═══════════ -->
+<div class="screen" id="screen-buildup">
+  <div class="glass-card" style="text-align:center;">
+    <div class="file-icon">🔮</div>
+    <div class="screen-title" id="buildup-title"></div>
+    <div id="buildup-result" style="display:none;">
+      <div class="screen-subtitle" id="buildup-sub"></div>
+      <div class="screen-title pulse-glow" id="buildup-filename"></div>
+    </div>
+    <button class="btn-glow" id="btn-open-future" style="display:none;">Abrir</button>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN 6: FINAL ═══════════ -->
+<div class="screen final-screen" id="screen-final">
+  <div class="glass-card" style="text-align:center;">
+    <div class="file-icon">💌</div>
+    <div class="multi-line-container" id="final-lines"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// PARTICLES SYSTEM
+// ═══════════════════════════════════════════
+(function initParticles() {
+  const canvas = document.getElementById('particles-canvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let w, h;
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+
+  class Particle {
+    constructor() { this.reset(); }
+    reset() {
+      this.x = Math.random() * w;
+      this.y = Math.random() * h;
+      this.size = Math.random() * 2 + 0.5;
+      this.speedX = (Math.random() - 0.5) * 0.3;
+      this.speedY = (Math.random() - 0.5) * 0.3 - 0.15;
+      this.opacity = Math.random() * 0.4 + 0.1;
+      this.hue = Math.random() > 0.5 ? 280 : 330;
+      this.life = 0;
+      this.maxLife = 300 + Math.random() * 400;
+    }
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      this.life++;
+      if (this.life > this.maxLife || this.x < -10 || this.x > w + 10 || this.y < -10 || this.y > h + 10) {
+        this.reset();
+      }
+    }
+    draw() {
+      const fadeIn = Math.min(this.life / 40, 1);
+      const fadeOut = Math.max(1 - (this.life - this.maxLife + 40) / 40, 0);
+      const alpha = this.opacity * fadeIn * (this.life > this.maxLife - 40 ? fadeOut : 1);
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${this.hue}, 70%, 70%, ${alpha})`;
+      ctx.fill();
+    }
+  }
+
+  const count = Math.min(60, Math.floor(w * h / 15000));
+  for (let i = 0; i < count; i++) {
+    particles.push(new Particle());
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, w, h);
+    particles.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+})();
+
+// ═══════════════════════════════════════════
+// AUDIO SYSTEM
+// ═══════════════════════════════════════════
+let audioCtx = null;
+let isMusicPlaying = false;
+let isMuted = true;
+let musicNodes = [];
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function startMusic() {
+  if (!audioCtx) initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  const pad1 = audioCtx.createOscillator();
+  const pad2 = audioCtx.createOscillator();
+  const pad3 = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+  const filter = audioCtx.createBiquadFilter();
+
+  pad1.type = 'sine';
+  pad1.frequency.value = 130.81;
+  pad2.type = 'sine';
+  pad2.frequency.value = 196.00;
+  pad3.type = 'sine';
+  pad3.frequency.value = 261.63;
+
+  filter.type = 'lowpass';
+  filter.frequency.value = 400;
+  filter.Q.value = 1;
+
+  gainNode.gain.value = isMuted ? 0 : 0.08;
+
+  pad1.connect(filter);
+  pad2.connect(filter);
+  pad3.connect(filter);
+  filter.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+
+  pad1.start();
+  pad2.start();
+  pad3.start();
+
+  musicNodes = [pad1, pad2, pad3, gainNode];
+  isMusicPlaying = true;
+
+  const lfo = audioCtx.createOscillator();
+  const lfoGain = audioCtx.createGain();
+  lfo.frequency.value = 0.15;
+  lfoGain.gain.value = 100;
+  lfo.connect(lfoGain);
+  lfoGain.connect(filter.frequency);
+  lfo.start();
+  musicNodes.push(lfo);
+}
+
+function toggleMute() {
+  isMuted = !isMuted;
+  const btn = document.getElementById('music-toggle');
+  btn.textContent = isMuted ? '🔇' : '🔊';
+
+  if (musicNodes.length >= 4) {
+    const gainNode = musicNodes[3];
+    if (gainNode) {
+      gainNode.gain.linearRampToValueAtTime(isMuted ? 0 : 0.08, audioCtx.currentTime + 0.3);
+    }
+  }
+}
+
+document.getElementById('music-toggle').addEventListener('click', toggleMute);
+
+// ═══════════════════════════════════════════
+// UTILITY FUNCTIONS
+// ═══════════════════════════════════════════
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function vibrate(ms = 100) {
+  if (navigator.vibrate) navigator.vibrate(ms);
+}
+
+async function typeText(element, text, speed = 45) {
+  return new Promise(resolve => {
+    let i = 0;
+    const cursor = document.createElement('span');
+    cursor.className = 'cursor';
+    element.textContent = '';
+    element.appendChild(cursor);
+
+    function type() {
+      if (i < text.length) {
+        element.insertBefore(document.createTextNode(text.charAt(i)), cursor);
+        i++;
+        setTimeout(type, speed + Math.random() * 25);
+      } else {
+        resolve();
+      }
+    }
+    type();
+  });
+}
+
+async function typeLine(container, text, speed = 40) {
+  return new Promise(resolve => {
+    const line = document.createElement('div');
+    // FIX: añadir 'visible' para que el texto sea visible desde el inicio
+    line.className = 'line visible typing';
+    const cursor = document.createElement('span');
+    cursor.className = 'cursor';
+    line.appendChild(cursor);
+    container.appendChild(line);
+
+    let i = 0;
+    function type() {
+      if (i < text.length) {
+        const charNode = document.createTextNode(text.charAt(i));
+        line.insertBefore(charNode, cursor);
+        i++;
+        setTimeout(type, speed + Math.random() * 30);
+      } else {
+        // FIX: mantener visible pero marcar como 'done' para ocultar el cursor
+        line.classList.remove('typing');
+        line.classList.add('done');
+        resolve();
+      }
+    }
+    type();
+  });
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => {
+    if (s.classList.contains('active')) {
+      s.classList.remove('active');
+      s.classList.add('exit');
+      setTimeout(() => s.classList.remove('exit'), 800);
+    }
+  });
+  setTimeout(() => {
+    document.getElementById(id).classList.add('active');
+  }, 400);
+}
+
+// ═══════════════════════════════════════════
+// SCREEN 1: LOADING
+// ═══════════════════════════════════════════
+async function runLoading() {
+  const titleEl = document.getElementById('loading-title');
+  const fill = document.getElementById('progress-fill');
+  const text = document.getElementById('progress-text');
+  const btn = document.getElementById('music-toggle');
+
+  await typeText(titleEl, 'Accediendo a tu dispositivo', 60);
+
+  const dotsSpan = document.createElement('span');
+  dotsSpan.className = 'blink-dots';
+  titleEl.appendChild(dotsSpan);
+
+  const intervals = [
+    { end: 8, time: 300 },
+    { end: 15, time: 500 },
+    { end: 28, time: 700 },
+    { end: 35, time: 200 },
+    { end: 52, time: 800 },
+    { end: 60, time: 400 },
+    { end: 73, time: 600 },
+    { end: 78, time: 150 },
+    { end: 88, time: 700 },
+    { end: 92, time: 300 },
+    { end: 97, time: 500 },
+    { end: 100, time: 250 },
+  ];
+
+  for (const interval of intervals) {
+    await delay(interval.time);
+    fill.style.width = interval.end + '%';
+    text.textContent = interval.end + '%';
+  }
+
+  await delay(400);
+
+  btn.classList.add('visible');
+
+  document.body.addEventListener('click', function firstClick() {
+    document.body.removeEventListener('click', firstClick);
+    initAudio();
+    startMusic();
+    if (isMuted) toggleMute();
+  }, { once: true });
+
+  showScreen('screen-file-found');
+  await delay(900);
+  runFileFound();
+}
+
+// ═══════════════════════════════════════════
+// SCREEN 2: FILE FOUND
+// ═══════════════════════════════════════════
+async function runFileFound() {
+  const titleEl = document.getElementById('found-title');
+  const btn = document.getElementById('btn-open-file');
+
+  await typeText(titleEl, 'Se encontró un archivo importante en tu dispositivo', 40);
+
+  await delay(600);
+  btn.disabled = false;
+  btn.style.opacity = '1';
+
+  btn.addEventListener('click', () => {
+    showScreen('screen-password');
+    document.getElementById('password-input').focus();
+    setTimeout(runPasswordScreen, 900);
+  }, { once: true });
+}
+
+// ═══════════════════════════════════════════
+// SCREEN 3: PASSWORD
+// ═══════════════════════════════════════════
+function runPasswordScreen() {
+  const input = document.getElementById('password-input');
+  const btn = document.getElementById('btn-unlock');
+  const errorMsg = document.getElementById('error-msg');
+  const correctPassword = 'huevitos de mono';
+  let attempts = 0;
+
+  btn.addEventListener('click', async () => {
+    const val = input.value.trim().toLowerCase();
+
+    if (val === correctPassword) {
+      showScreen('screen-first-file');
+      await delay(900);
+      runFirstFile();
+    } else {
+      attempts++;
+      vibrate(150);
+      input.classList.add('shake');
+      document.querySelector('#screen-password .glass-card').classList.add('vibrate');
+      setTimeout(() => {
+        input.classList.remove('shake');
+        document.querySelector('#screen-password .glass-card').classList.remove('vibrate');
+      }, 500);
+
+      input.value = '';
+
+      if (attempts === 1) {
+        errorMsg.textContent = 'Amor, recordá cómo les decís a mis...😂';
+        errorMsg.className = 'message-text visible';
+        setTimeout(async () => {
+          await delay(2000);
+          errorMsg.textContent = 'Pista: Es un apodo';
+          errorMsg.className = 'message-text visible hint';
+        }, 1200);
+      } else if (attempts === 2) {
+        errorMsg.textContent = '💡 Son "huevitos"... de algo';
+        errorMsg.className = 'message-text visible hint';
+      } else {
+        errorMsg.textContent = '💕 Pista: "Huevitos de m..."';
+        errorMsg.className = 'message-text visible hint';
+      }
+    }
+  });
+
+  input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') btn.click();
+  });
+}
+
+// ═══════════════════════════════════════════
+// SCREEN 4: FIRST FILE
+// ═══════════════════════════════════════════
+async function runFirstFile() {
+  const container = document.getElementById('first-file-lines');
+  const btn = document.getElementById('btn-continue');
+
+  const lines = [
+    { text: 'En tus datos se encontró que eres una maravillosa mujer❤️', pause: 1200 },
+    { text: 'Se encontraron unas fotos tuyas que están... Divinas😘', pause: 1400 },
+    { text: 'Se encontró que el 100% de tu almacenamiento está ocupado por lo mucho que te amo✨', pause: 1600 },
+    { text: 'Se encontró una vulnerabilidad crítica: mi corazón es totalmente vulnerable a tu mirada😍', pause: 2200 },
+    { text: 'Y se encontró una acción necesaria a realizar:', pause: 1200 },
+    { text: 'Darme un beso😉', pause: 0 },
+  ];
+
+  for (const line of lines) {
+    await typeLine(container, line.text, 35);
+    if (line.pause > 0) {
+      await delay(line.pause);
+    }
+  }
+
+  await delay(800);
+  btn.style.display = 'inline-flex';
+  btn.disabled = false;
+
+  btn.addEventListener('click', () => {
+    showScreen('screen-buildup');
+    setTimeout(runBuildup, 900);
+  }, { once: true });
+}
+
+// ═══════════════════════════════════════════
+// SCREEN 5: BUILD-UP
+// ═══════════════════════════════════════════
+async function runBuildup() {
+  const titleEl = document.getElementById('buildup-title');
+  const resultDiv = document.getElementById('buildup-result');
+  const subEl = document.getElementById('buildup-sub');
+  const nameEl = document.getElementById('buildup-filename');
+  const btn = document.getElementById('btn-open-future');
+
+  await typeText(titleEl, 'Cargando...', 50);
+
+  const dotsSpan = document.createElement('span');
+  dotsSpan.className = 'blink-dots';
+  titleEl.appendChild(dotsSpan);
+
+  await delay(2000);
+
+  titleEl.innerHTML = '';
+  await typeText(titleEl, 'Hay algo mas...', 45);
+
+  await delay(1200);
+
+  resultDiv.style.display = 'block';
+  subEl.textContent = 'Se encontró un archivo llamado';
+
+  await delay(1000);
+
+  await typeText(nameEl, 'Kenneth mi amor...', 55);
+
+  await delay(1200);
+  btn.style.display = 'inline-flex';
+  btn.disabled = false;
+
+  btn.addEventListener('click', () => {
+    showScreen('screen-final');
+    setTimeout(runFinal, 900);
+  }, { once: true });
+}
+
+// ═══════════════════════════════════════════
+// SCREEN 6: FINAL MESSAGE
+// ═══════════════════════════════════════════
+async function runFinal() {
+  const container = document.getElementById('final-lines');
+
+  const lines = [
+    {
+      text: 'Aquel hombre que ha decidido amarte más allá de la vida, el que encuentra en tu felicidad la suya y no teme a los retos ni al tiempo si el premio es un futuro de tu mano... ese hombre está justo aquí, a tu lado',
+      pause: 2500,
+      speed: 30
+    },
+    {
+      text: 'Te amo con todo lo que soy💛💙',
+      pause: 0,
+      speed: 40
+    }
+  ];
+
+  for (const line of lines) {
+    await typeLine(container, line.text, line.speed);
+    if (line.pause > 0) {
+      await delay(line.pause);
+    }
+  }
+
+  setTimeout(spawnHearts, 500);
+}
+
+function spawnHearts() {
+  const hearts = ['💜', '💕', '✨', '💗', '🤍', '💜'];
+  let count = 0;
+  const interval = setInterval(() => {
+    if (count >= 15) {
+      clearInterval(interval);
+      return;
+    }
+    const heart = document.createElement('div');
+    heart.className = 'heart-float';
+    heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+    heart.style.left = (Math.random() * 90 + 5) + '%';
+    heart.style.bottom = '-20px';
+    heart.style.fontSize = (1 + Math.random() * 1.2) + 'rem';
+    heart.style.animationDuration = (3 + Math.random() * 3) + 's';
+    document.body.appendChild(heart);
+
+    setTimeout(() => heart.remove(), 6000);
+    count++;
+  }, 400);
+}
+
+// ═══════════════════════════════════════════
+// START
+// ═══════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(runLoading, 500);
+});
+</script>
+
+</body>
+</html>
